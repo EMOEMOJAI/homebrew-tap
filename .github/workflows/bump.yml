@@ -1,0 +1,57 @@
+name: Bump
+
+# Follows new SidecarKeeper releases. The formula is only committed after it has been
+# installed and tested here, because a push made by a workflow does not trigger the Tests
+# workflow.
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: macos-15
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ENV_HINTS: "1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Update the formula to the latest release
+        id: bump
+        run: |
+          tag="$(gh api repos/EMOEMOJAI/SidecarKeeper/releases/latest --jq .tag_name)"
+          echo "latest release: $tag"
+          result="$(python3 scripts/bump.py "$tag")"
+          echo "$result"
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Install and test the updated formula
+        if: steps.bump.outputs.result == 'bumped'
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/emoemojai"
+          ln -s "$PWD" "$(brew --repository)/Library/Taps/emoemojai/homebrew-tap"
+          brew style emoemojai/tap
+          brew audit --strict --online --formula emoemojai/tap/sidecarkeeper
+          brew install --build-from-source emoemojai/tap/sidecarkeeper
+          brew test emoemojai/tap/sidecarkeeper
+      - name: Commit
+        if: steps.bump.outputs.result == 'bumped'
+        env:
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "sidecarkeeper ${TAG#v}"
+          git push origin HEAD:main

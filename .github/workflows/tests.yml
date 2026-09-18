@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  formula:
+    name: sidecarkeeper (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15, macos-26]
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ENV_HINTS: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Tap this checkout
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/emoemojai"
+          ln -s "$PWD" "$(brew --repository)/Library/Taps/emoemojai/homebrew-tap"
+      - run: brew style emoemojai/tap
+      - run: brew audit --strict --online --formula emoemojai/tap/sidecarkeeper
+      - run: brew install --build-from-source emoemojai/tap/sidecarkeeper
+      - run: brew test emoemojai/tap/sidecarkeeper
