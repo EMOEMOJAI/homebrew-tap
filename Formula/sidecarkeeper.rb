@@ -1,8 +1,8 @@
 class Sidecarkeeper < Formula
   desc "Auto-reconnect Apple Sidecar so an iPad stays a Mac's second display"
   homepage "https://emoemojai.github.io/SidecarKeeper/"
-  url "https://github.com/EMOEMOJAI/SidecarKeeper/archive/refs/tags/v1.2.1.tar.gz"
-  sha256 "ff9ee677981f0116389ebd0c580030fa2910681128bdd976db58b564b821d309"
+  url "https://github.com/EMOEMOJAI/SidecarKeeper/archive/refs/tags/v1.3.0.tar.gz"
+  sha256 "7e80857fd033e71f2a8553b2fb7092a84545a91e9c5dc3264f3eb296e9c6dba2"
   license "MIT"
   head "https://github.com/EMOEMOJAI/SidecarKeeper.git", branch: "main"
 
@@ -46,16 +46,22 @@ class Sidecarkeeper < Formula
         ~/Library/Logs/sidecar-keeper.log
       and `sidecar-keeper status`, `pause` and `resume` control it.
 
-      To choose a specific iPad or use the experimental wired-only mode, use the
-      standard installer instead of the Homebrew service:
-        https://github.com/EMOEMOJAI/SidecarKeeper#install
-      Do not run both at once, or two watchers will compete.
+      To choose a specific iPad or use the experimental wired-only mode:
+        sidecar-keeper config --init
+      edit the file it creates, then `brew services restart sidecarkeeper`.
+
+      If you also used the standard installer, remove that install first, or two
+      watchers will compete. `sidecar-keeper status` warns when that happens.
     EOS
   end
 
   test do
     assert_equal version.to_s, shell_output("#{bin}/sidecar-keeper --version").strip
     assert_match "--wired", shell_output("#{bin}/sidecar-keeper --help")
+    # The settings file is how a brew services install gets configured.
+    ENV["SIDECARKEEPER_STATE_DIR"] = testpath/"state"
+    system bin/"sidecar-keeper", "config", "--init"
+    assert_path_exists testpath/"state/config"
     assert_match "unknown argument", shell_output("#{bin}/sidecar-keeper --bogus 2>&1", 2)
     assert_predicate libexec/"SidecarLauncher", :executable?
     # `devices` only lists; it never connects, so it is safe to run anywhere.

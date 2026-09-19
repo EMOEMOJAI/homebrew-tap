@@ -13,4 +13,7 @@ The formula builds from the tagged source with the Swift compiler that Homebrew 
 requires, so nothing downloaded is a prebuilt binary. A scheduled workflow checks for new
 SidecarKeeper releases, and only updates the formula after installing and testing it.
 
+To choose a specific iPad or wired mode, run `sidecar-keeper config --init`, edit the file it
+creates, and `brew services restart sidecarkeeper`.
+
 Remove with `brew services stop sidecarkeeper && brew uninstall sidecarkeeper`.
