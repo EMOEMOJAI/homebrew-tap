@@ -50,6 +50,9 @@ class Sidecarkeeper < Formula
         sidecar-keeper config --init
       edit the file it creates, then `brew services restart sidecarkeeper`.
 
+      After `brew upgrade`, restart it so the new version is the one running:
+        brew services restart sidecarkeeper
+
       If you also used the standard installer, remove that install first, or two
       watchers will compete. `sidecar-keeper status` warns when that happens.
     EOS
