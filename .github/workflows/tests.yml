@@ -18,10 +18,16 @@ jobs:
     name: sidecarkeeper (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    # macOS 14 runners retire on 2026-11-02 and fail on purpose before that, so they may fail.
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-26]
+        os: [macos-15, macos-26, macos-15-intel]
+        experimental: [false]
+        include:
+          - os: macos-14
+            experimental: true
     env:
       HOMEBREW_NO_AUTO_UPDATE: "1"
       HOMEBREW_NO_INSTALL_CLEANUP: "1"
