@@ -1,8 +1,8 @@
 class Sidecarkeeper < Formula
   desc "Auto-reconnect Apple Sidecar so an iPad stays a Mac's second display"
   homepage "https://emoemojai.github.io/SidecarKeeper/"
-  url "https://github.com/EMOEMOJAI/SidecarKeeper/archive/refs/tags/v1.3.1.tar.gz"
-  sha256 "e0687fc24e40bc13fe27fdcb8db0b3f6dc4ef7b26c86f3234de6adc733ed64fd"
+  url "https://github.com/EMOEMOJAI/SidecarKeeper/archive/refs/tags/v1.4.0.tar.gz"
+  sha256 "33b3425c318ba1874fb3751fca6d535d14a546946b1052cd3912bf5159d736e3"
   license "MIT"
   head "https://github.com/EMOEMOJAI/SidecarKeeper.git", branch: "main"
 
